@@ -27,8 +27,8 @@ def run_inference(flattened_input_window: np.ndarray) -> np.ndarray:
     
     Expected Input: 
     A 2D numpy array of shape (Samples, TimeSteps * Features).
-    For a single API request of 48 timesteps with 11 features, 
-    the shape must be (1, 528).
+    For a single API request of 48 timesteps with 8 features, 
+    the shape must be (1, 384).
     
     Returns:
     A 2D numpy array containing the forecasted output sequence.
