@@ -1,7 +1,8 @@
 import os
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+
 
 def data_preparation_ampds2(df_whe: pd.DataFrame, df_fre: pd.DataFrame, df_hpe: pd.DataFrame, sample_rate: str = '30min', is_inference: bool = False) -> pd.DataFrame:
     print("Merging and converting timestamps...")

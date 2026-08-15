@@ -1,7 +1,9 @@
+
 import numpy as np
-import sys
+
 # import pytest
 from predict import run_inference
+
 
 def test_run_inference_valid_shape():
     # Assuming the updated app.py logic of 48 timesteps * 8 features = 384

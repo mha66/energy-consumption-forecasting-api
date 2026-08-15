@@ -1,16 +1,16 @@
-import pandas as pd
 import os
-import mlflow
 import time
-import xgboost as xgb
 
+import mlflow
+import pandas as pd
+import xgboost as xgb
+from mlflow.models import infer_signature
+from numpy.lib.stride_tricks import sliding_window_view
 from sklearn.compose import TransformedTargetRegressor
-from sklearn.metrics import r2_score, mean_absolute_error, root_mean_squared_error
+from sklearn.metrics import mean_absolute_error, r2_score, root_mean_squared_error
 from sklearn.multioutput import MultiOutputRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from numpy.lib.stride_tricks import sliding_window_view
-from mlflow.models import infer_signature
 
 from data_prep import data_preparation_ampds2
 
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     
     print("\nTraining Model on 80% Data...")
     # Start a new run to store the FINAL artifact
-    with mlflow.start_run(run_name=f"XGBoost_Validation"):
+    with mlflow.start_run(run_name="XGBoost_Validation"):
         # Log the PARAMS again for the production record
         mlflow.log_params(PARAMS)
         

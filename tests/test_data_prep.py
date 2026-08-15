@@ -1,7 +1,8 @@
-import pytest
 import pandas as pd
-import numpy as np
+import pytest
+
 from data_prep import data_preparation_ampds2
+
 
 @pytest.fixture
 def mock_power_data():

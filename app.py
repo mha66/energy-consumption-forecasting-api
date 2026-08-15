@@ -1,10 +1,10 @@
-import numpy as np
-import math
 import logging
+import math
 import time
+
+import numpy as np
 from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field, field_validator
-from typing import List
 
 from predict import run_inference
 
@@ -58,14 +58,14 @@ async def health_check():
 # --- 1. Define the Data Contracts (DTOs) ---
 
 class ForecastRequestDTO(BaseModel):
-    features: List[List[float]] = Field(
+    features: list[list[float]] = Field(
         ..., 
         description="A 2D array of 48 timesteps. Each timestep must contain exactly 8 features: [Baseload_kW, consumption_change, hour_sin, hour_cos, day_sin, day_cos, month_sin, month_cos]."
     )
 
     @field_validator('features')
     @classmethod
-    def validate_features(cls, features: List[List[float]]) -> List[List[float]]:
+    def validate_features(cls, features: list[list[float]]) -> list[list[float]]:
         # 1. Validate total sequence length
         if len(features) != 48:
             raise ValueError(f"Expected 48 timesteps, but received {len(features)}.")
@@ -103,7 +103,7 @@ class ForecastRequestDTO(BaseModel):
 
 class ForecastResponseDTO(BaseModel):
     # The output will be a list of 48 forecasted floats representing the next 24 hours
-    forecast: List[float]
+    forecast: list[float]
 
 
 # --- 2. Define the Controller / Endpoint ---
@@ -143,7 +143,7 @@ async def predict_energy(request: ForecastRequestDTO):
         return ForecastResponseDTO(forecast=forecast_list)
         
     except Exception as e:
-        logger.error(f"SYSTEM_ERROR | Model inference failed: {str(e)}")
+        logger.error(f"SYSTEM_ERROR | Model inference failed: {e!s}")
         raise HTTPException(status_code=500, detail="Internal inference error.")
 
 # --- 3. Server Startup ---
