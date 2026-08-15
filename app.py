@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field, field_validator
-from typing import List
 import numpy as np
 import math
+import logging
+import time
+from fastapi import FastAPI, HTTPException, Request
+from pydantic import BaseModel, Field, field_validator
+from typing import List
 
-# Import your pre-loaded model function from predict.py
 from predict import run_inference
 
 app = FastAPI(
@@ -12,6 +13,47 @@ app = FastAPI(
     description="MLOps API for forecasting 24-hour baseload energy consumption.",
     version="1.0.0"
 )
+
+
+# Configure the standard Python logger
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger("mlops_api")
+
+@app.middleware("http")
+async def log_system_metrics(request: Request, call_next):
+    """
+    SYSTEM OBSERVABILITY:
+    Tracks pure software performance metrics regardless of the payload payload.
+    """
+    start_time = time.time()
+    
+    # Let the request pass through to the router
+    response = await call_next(request)
+    
+    # Calculate latency
+    process_time = time.time() - start_time
+    
+    # Log the system metrics
+    logger.info(
+        f"SYSTEM | Method: {request.method} | Path: {request.url.path} | "
+        f"Status: {response.status_code} | Latency: {process_time:.4f}s"
+    )
+    
+    return response
+
+# Health Endpoint
+@app.get("/health")
+async def health_check():
+    """Used by Docker/Load Balancers to verify the API is alive."""
+    return {
+        "status": "healthy",
+        "api_version": "1.0.0",
+        "model_status": "loaded" # In a real app, you might verify the MLflow model is in memory
+    }
+
 
 # --- 1. Define the Data Contracts (DTOs) ---
 
@@ -72,29 +114,37 @@ async def root():
 
 @app.post("/predict", response_model=ForecastResponseDTO)
 async def predict_energy(request: ForecastRequestDTO):
-    """
-    Accepts 48 timesteps of historical energy data and returns a 48-timestep forecast.
-    """
-    # # 1. Strict Validation: Reject bad payloads immediately
-    # if len(request.features) != 48:
-    #     raise HTTPException(status_code=400, detail=f"Expected 48 timesteps, received {len(request.features)}.")
+    # 1. Data Transformation
+    features_array = np.array(request.features)
     
-    # for i, timestep in enumerate(request.features):
-    #     if len(timestep) != 8:
-    #         raise HTTPException(status_code=400, detail=f"Timestep {i} must have exactly 8 features.")
-            
-    # 2. Data Transformation
-    # Convert the 2D list into a numpy array, then flatten it to shape (1, 384)
-    # 48 timesteps * 8 features = 384 flattened features expected by XGBoost
-    input_array = np.array(request.features).flatten().reshape(1, -1)
+    # Extract ML Observability Metrics BEFORE flattening
+    # Assuming Baseload_kW is at index 0 based on your DTO description
+    baseload_mean = float(np.mean(features_array[:, 0]))
+    baseload_max = float(np.max(features_array[:, 0]))
     
-    # 3. Model Inference
+    # Flatten for the model
+    input_array = features_array.flatten().reshape(1, -1)
+    
+    # 2. Model Inference
     try:
         prediction = run_inference(input_array)
-        # prediction is a 2D numpy array: [[val1, val2, ... val48]]. Extract the inner list.
-        return ForecastResponseDTO(forecast=prediction[0].tolist())
+        forecast_list = prediction[0].tolist()
+        
+        # Extract ML Observability Metrics from the OUTPUT
+        forecast_mean = float(np.mean(forecast_list))
+        forecast_max = float(np.max(forecast_list))
+        # 3. Log the ML Metrics
+        logger.info(
+            f"ML_OPS | Inference Success | "
+            f"Input Baseload (Mean: {baseload_mean:.2f}kW, Max: {baseload_max:.2f}kW) | "
+            f"Forecast Mean: {forecast_mean:.2f}kW, Max: {forecast_max:.2f}kW"
+        )
+        
+        return ForecastResponseDTO(forecast=forecast_list)
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Model inference failed: {str(e)}")
+        logger.error(f"SYSTEM_ERROR | Model inference failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal inference error.")
 
 # --- 3. Server Startup ---
 if __name__ == "__main__":
