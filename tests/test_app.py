@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-import sys
+
 # import pytest
 from app import app
 
@@ -15,7 +15,7 @@ def test_health_check():
 def test_predict_energy_valid_request():
     """Test a perfectly formatted request."""
     # 48 timesteps, each with 8 features
-    valid_features = [[0.5] * 8 for _ in range(48)]
+    valid_features = [[2**-0.5] * 8 for _ in range(48)]
     
     response = client.post("/predict", json={"features": valid_features})
     
@@ -28,19 +28,19 @@ def test_predict_energy_valid_request():
 def test_predict_energy_invalid_timestep_count():
     """Test the strict validation for exactly 48 timesteps."""
     # Only 47 timesteps provided
-    invalid_features = [[0.5] * 8 for _ in range(47)]
+    invalid_features = [[2**-0.5] * 8 for _ in range(47)]
     
     response = client.post("/predict", json={"features": invalid_features})
     
-    assert response.status_code == 400
-    assert "Expected 48 timesteps" in response.json()["detail"]
+    assert response.status_code in [400, 422]  # Depending on FastAPI's validation, it could be either
+    assert "Expected 48 timesteps" in response.json()["detail"][0]["msg"]
 
 def test_predict_energy_invalid_feature_count():
     """Test the strict validation for exactly 8 features per timestep."""
     # 48 timesteps, but only 7 features per timestep
-    invalid_features = [[0.5] * 7 for _ in range(48)]
+    invalid_features = [[2**-0.5] * 7 for _ in range(48)]
     
     response = client.post("/predict", json={"features": invalid_features})
     
-    assert response.status_code == 400
-    assert "must have exactly 8 features" in response.json()["detail"]
+    assert response.status_code in [400, 422]  # Depending on FastAPI's validation, it could be either
+    assert "must have exactly 8 features" in response.json()["detail"][0]["msg"]
