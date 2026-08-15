@@ -142,8 +142,8 @@ async def predict_energy(request: ForecastRequestDTO):
         
         return ForecastResponseDTO(forecast=forecast_list)
         
-    except Exception as e:
-        logger.error(f"SYSTEM_ERROR | Model inference failed: {e!s}")
+    except Exception:
+        logger.exception("SYSTEM_ERROR | Model inference failed:")
         raise HTTPException(status_code=500, detail="Internal inference error.")
 
 # --- 3. Server Startup ---
