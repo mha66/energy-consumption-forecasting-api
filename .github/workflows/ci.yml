@@ -33,10 +33,10 @@ jobs:
         run: |
           # The github output format annotates your PRs directly in the GitHub UI
           ruff check --output-format=github .
-          
+
       - name: Run Pytest Suite
         run: |
-          pytest -v
+          python -m pytest -v
 
       - name: Verify Docker Build
         run: |
