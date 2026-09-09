@@ -226,3 +226,5 @@ deployed_model/
 # MLFlow
 mlruns/
 mlflow.db
+/data
+/deployed_model

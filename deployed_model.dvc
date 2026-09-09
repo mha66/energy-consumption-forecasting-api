@@ -1,0 +1,6 @@
+outs:
+- md5: 88835c8961b163aafb0f7357abf04317.dir
+  size: 10083316
+  nfiles: 5
+  hash: md5
+  path: deployed_model
