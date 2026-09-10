@@ -34,6 +34,21 @@ jobs:
           # The github output format annotates your PRs directly in the GitHub UI
           ruff check --output-format=github .
 
+      - name: Pull Data and Model via DVC
+        env:
+          # Pulls the secret from GitHub securely
+          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+          DAGSHUB_USERNAME: "mha66" 
+        run: |
+          # Configure DVC to use HTTP basic auth for this local runner
+          # Note: Replace 'origin' if you named your DVC remote something else
+          dvc remote modify origin --local auth basic
+          dvc remote modify origin --local user $DAGSHUB_USERNAME
+          dvc remote modify origin --local password $DAGSHUB_TOKEN
+          
+          # Download the real deployed_model and data directories
+          dvc pull
+
       - name: Run Pytest Suite
         run: |
           python -m pytest -v

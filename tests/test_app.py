@@ -1,4 +1,4 @@
-from unittest.mock import patch
+#from unittest.mock import patch
 
 # import pytest
 import numpy as np
@@ -15,7 +15,7 @@ def test_health_check():
     assert response.status_code == 200
     assert response.json() == {"status": "online", "message": "Energy Consumption Forecasting API is running. Visit /docs for the interactive UI."}
 
-@patch('predict.model')
+# @patch('predict.model')
 def test_predict_energy_valid_request(mock_model):
     """Test a perfectly formatted request."""
     # Configure the mock model to return a dummy prediction
@@ -32,7 +32,7 @@ def test_predict_energy_valid_request(mock_model):
     assert len(data["forecast"]) == 48
     assert isinstance(data["forecast"][0], float)
 
-@patch('predict.model')
+# @patch('predict.model')
 def test_predict_energy_invalid_timestep_count(mock_model):
     """Test the strict validation for exactly 48 timesteps."""
     # Configure the mock model to return a dummy prediction
@@ -46,7 +46,7 @@ def test_predict_energy_invalid_timestep_count(mock_model):
     assert response.status_code in [400, 422]  # Depending on FastAPI's validation, it could be either
     assert "Expected 48 timesteps" in response.json()["detail"][0]["msg"]
 
-@patch('predict.model')
+# @patch('predict.model')
 def test_predict_energy_invalid_feature_count(mock_model):
     """Test the strict validation for exactly 8 features per timestep."""
     # Configure the mock model to return a dummy prediction

@@ -1,6 +1,6 @@
 
 # import pytest
-from unittest.mock import patch
+# from unittest.mock import patch
 
 import numpy as np
 
@@ -8,7 +8,7 @@ from predict import run_inference
 
 
 # This decorator replaces 'model' inside 'predict.py' with a Mock object
-@patch('predict.model')
+# @patch('predict.model')
 def test_run_inference_valid_shape(mock_model):
     # 1. Configure the fake model to return a dummy prediction shape
     mock_model.predict.return_value = np.random.rand(1, 48)
