@@ -36,16 +36,10 @@ jobs:
 
       - name: Pull Data and Model via DVC
         env:
-          # Pulls the secret from GitHub securely
-          DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
-          DAGSHUB_USERNAME: "mha66" 
+          # DagsHub uses the token as both the AWS access key and secret key
+          AWS_ACCESS_KEY_ID: ${{ secrets.DAGSHUB_TOKEN }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.DAGSHUB_TOKEN }}
         run: |
-          # Configure DVC to use HTTP basic auth for this local runner
-          # Note: Replace 'origin' if you named your DVC remote something else
-          dvc remote modify origin --local auth basic
-          dvc remote modify origin --local user $DAGSHUB_USERNAME
-          dvc remote modify origin --local password $DAGSHUB_TOKEN
-          
           # Download the real deployed_model and data directories
           dvc pull
 
