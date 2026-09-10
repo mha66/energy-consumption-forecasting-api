@@ -16,10 +16,8 @@ def test_health_check():
     assert response.json() == {"status": "online", "message": "Energy Consumption Forecasting API is running. Visit /docs for the interactive UI."}
 
 # @patch('predict.model')
-def test_predict_energy_valid_request(mock_model):
+def test_predict_energy_valid_request():
     """Test a perfectly formatted request."""
-    # Configure the mock model to return a dummy prediction
-    mock_model.predict.return_value = np.random.rand(1, 48)
     
     # 48 timesteps, each with 8 features
     valid_features = [[2**-0.5] * 8 for _ in range(48)]
@@ -33,10 +31,8 @@ def test_predict_energy_valid_request(mock_model):
     assert isinstance(data["forecast"][0], float)
 
 # @patch('predict.model')
-def test_predict_energy_invalid_timestep_count(mock_model):
+def test_predict_energy_invalid_timestep_count():
     """Test the strict validation for exactly 48 timesteps."""
-    # Configure the mock model to return a dummy prediction
-    mock_model.predict.return_value = np.random.rand(1, 48)
     
     # Only 47 timesteps provided
     invalid_features = [[2**-0.5] * 8 for _ in range(47)]
@@ -47,10 +43,8 @@ def test_predict_energy_invalid_timestep_count(mock_model):
     assert "Expected 48 timesteps" in response.json()["detail"][0]["msg"]
 
 # @patch('predict.model')
-def test_predict_energy_invalid_feature_count(mock_model):
+def test_predict_energy_invalid_feature_count():
     """Test the strict validation for exactly 8 features per timestep."""
-    # Configure the mock model to return a dummy prediction
-    mock_model.predict.return_value = np.random.rand(1, 48)
     
     # 48 timesteps, but only 7 features per timestep
     invalid_features = [[2**-0.5] * 7 for _ in range(48)]
